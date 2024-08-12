@@ -1,6 +1,7 @@
 const express = require('express')
+const logger = require('morgan')
+
 const app = express()
-app.use(express.json())
 
 const generateId = () => {
     let max = 1000000000
@@ -35,6 +36,12 @@ let persons = [
       "number": "39-23-6423122"
     }
 ]
+
+logger.token('content', (req, res) =>  JSON.stringify(req.body) )
+
+app.use(express.json())
+
+app.use(logger(':method :url :status :res[content-length] - :response-time ms :content'))
 
 app.get('/api/persons', (request, response) => {
     response.json(persons)
@@ -99,6 +106,12 @@ app.post('/api/persons', (request, response) => {
 
     response.json(person)
 })
+
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
+  
+app.use(unknownEndpoint)
 
 const PORT = 3001
 app.listen(PORT, () => {
